@@ -7,8 +7,9 @@ public class Game : MonoBehaviour
 
     public static int gridHeight = 20;
     public static int gridWidth = 10;
+    public static int count = 0;
 
-    public static Transform[,] grid = new Transform[gridHeight,gridWidth];
+    public static Transform[,] grid = new Transform[gridWidth,gridHeight];
 
     // Start is called before the first frame update
     void Start(){
@@ -25,8 +26,12 @@ public class Game : MonoBehaviour
     }
     public bool CheckBoundries(Vector3 coords){
 
-        return (coords.x > -gridWidth/2 && coords.x <= gridWidth/2 && coords.y > -gridHeight/2);
+        return (coords.x >= 0 && coords.x < gridWidth && coords.y >= 0);
 
+    }
+
+    public Vector3 AlignToGrid (Vector2 coords){
+        return new Vector3 (Mathf.Round(coords.x),Mathf.Round(coords.y),0);
     }
 
     public string GetRandomPiece(){
@@ -61,18 +66,36 @@ public class Game : MonoBehaviour
     }
     public void MakeNewPiece(){
         string pieceName = GetRandomPiece();
-        GameObject piece = (GameObject)Instantiate(Resources.Load(pieceName,typeof(GameObject)),new Vector2(0,12), Quaternion.identity);
+        GameObject piece = (GameObject)Instantiate(Resources.Load(pieceName,typeof(GameObject)),new Vector2(4,20), Quaternion.identity);
     }
 
     public void UpdateGrid(Shape shape){
 
-        for (int y = 0; x < gridHeight; y++){
-            for (int y = 0; x < gridHeight; y++){
+        
+        for (int y = 0; y < gridHeight; ++y){
+            for (int x = 0; x < gridWidth; ++x){
                 if (grid[x,y] != null){
-                    
+                    if (grid[x,y].parent == shape.transform){
+                        grid[x,y] = null;
+                    }
                 }
             }
         }
+        foreach (Transform tile in shape.transform){
+            Vector2 coords = tile.position;
 
+            if (coords.y < gridHeight) {
+                grid[(int)coords.x, (int)coords.y] = tile;
+            }
+        }
+        
+    }
+
+    public Transform GetShapeFromGrid (Vector2 coords){
+        if (coords.y >= gridHeight || coords.x >= gridWidth || coords.y < 0 || coords.x < 0){
+            return null;
+        } else {
+            return grid[(int)coords.x,(int)coords.y];
+        }
     }
 }
