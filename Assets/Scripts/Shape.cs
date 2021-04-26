@@ -96,7 +96,6 @@ public class Shape : MonoBehaviour{
                 return false;
             }
         }
-    
         return true;
     }
 }

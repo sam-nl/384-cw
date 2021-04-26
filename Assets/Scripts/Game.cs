@@ -1,13 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class Game : MonoBehaviour
-{
+public class Game : MonoBehaviour{
 
     public static int gridHeight = 20;
     public static int gridWidth = 10;
-    public static int count = 0;
+    public static int score = 0;
+    public Text interfaceScore;
+
+    public static int rowsClearedThisTurn = 0;
+
+    public static int singleScore = 40;
+    public static int doubleScore = 100;
+    public static int tripleScore = 300;
+    public static int tetrisScore = 1200;
 
     public static Transform[,] grid = new Transform[gridWidth,gridHeight];
 
@@ -18,31 +27,11 @@ public class Game : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        count = count + 1;
-        if (count == 2000){
-            count = 0;
-            string str = ""; 
-            int total = 0;
-            for (int y = 0; y < gridHeight; ++y){
-                for (int x = 0; x < gridWidth; ++x){
-                    if (grid[x,y] == null){
-                        str = str + "0";
-                    }else{
-                        str = str + "X";
-                    }
-                    total +=1;
-                }
-                str = str + " | ";
-            }
-            Debug.Log(str);
-            Debug.Log(total);
-        }
-        
+        updateScore();
+        string s = score.ToString();
+        interfaceScore.text = "Score:   "+s;
     }
 
-    public void test(){
-
-    }
     public bool CheckBoundries(Vector3 coords){
 
         return (coords.x >= 0 && coords.x < gridWidth && coords.y >= 0);
@@ -82,6 +71,7 @@ public class Game : MonoBehaviour
         }
         return "prefabs/" + pieceName;
     }
+
     public void MakeNewPiece(){
         string pieceName = GetRandomPiece();
         GameObject piece = (GameObject)Instantiate(Resources.Load(pieceName,typeof(GameObject)),new Vector2(4,20), Quaternion.identity);
@@ -132,20 +122,20 @@ public class Game : MonoBehaviour
             grid[x,y] = null;
         }
         ShiftRowsAboveDown(y);
+        rowsClearedThisTurn += 1;
     }
 
     public void ClearRows(){
         bool looping = true;
         while (looping){
+            looping = false;
             for (int y = 0; y<gridHeight; y++){
                 if (CheckRowFull(y)){
                     ClearRow(y);
-                    break;
+                    looping = true;
                 }
-                looping = false;
             }
         }
-        
     }
 
     public void ShiftRowDown(int y){
@@ -176,7 +166,42 @@ public class Game : MonoBehaviour
     }
 
     public void GameOver(){
-        Application.LoadLevel("GameOver");
+        SceneManager.LoadScene("GameEnd");
     }
-    
+
+    public void updateScore(){
+        if (rowsClearedThisTurn > 0){
+            switch(rowsClearedThisTurn){
+                case 1:
+                    addSingle();
+                    break;
+                case 2:
+                    addDouble();
+                    break;  
+                case 3:
+                    addTriple();
+                    break;
+                case 4:
+                    addTetris();
+                    break;
+            }
+            rowsClearedThisTurn = 0;
+        }
+    }
+
+    public void addSingle(){
+        score = score + singleScore;
+    }
+
+    public void addDouble(){
+        score = score + doubleScore; 
+    }
+
+    public void addTriple(){
+        score = score + tripleScore;
+    }
+
+    public void addTetris(){
+        score = score + tetrisScore;
+    }
 }
